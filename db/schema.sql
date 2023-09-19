@@ -16,3 +16,5 @@ CREATE TABLE candidates (
     industry_connected BOOLEAN NOT NULL,
     CONSTRAINT fk_party FOREIGN KEY (party_id) REFERENCES parties(id) ON DELETE SET NULL
 );
+
+ALTER TABLE candidates ADD COLUMN party_id INTEGER;
