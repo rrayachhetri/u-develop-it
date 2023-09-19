@@ -30,18 +30,11 @@ const db = mysql.createConnection(
   console.log("Connected to the election database.")
 );
 
-// db.query(`SELECT * FROM candidates`, (err, rows) => {
-//   if (err) {
-//     console.log(err);
-//   }
-//   console.log(rows);
-// });
-
-// Get all candidates
+// Get all candidates and their party affiliation
 app.get("/api/candidates", (req, res) => {
   const sql = `SELECT candidates.*, parties.name AS party_name
-  FROM candidates
-  LEFT JOIN parties ON candidates.party_id = parties.id`;
+                FROM candidates
+                LEFT JOIN parties ON candidates.party_id = parties.id`;
 
   db.query(sql, (err, rows) => {
     if (err) {
@@ -75,28 +68,6 @@ app.get("/api/candidates/:id", (req, res) => {
   });
 });
 
-//Delete a condidate
-app.delete("/api/candidates/:id", (req, res) => {
-  const sql = `DELETE FROM candidates WHERE id = ?`;
-  const params = [req.params.id];
-  db.query(sql, params, (err, result) => {
-    if (err) {
-      res.status(400).json({ error: err.message });
-      return;
-    } else if (!result.affectedRows) {
-      res.json({
-        message: "Candidate not found",
-      });
-    } else {
-      res.json({
-        message: "deleted",
-        changes: result.affectedRows,
-        id: req.params.id,
-      });
-    }
-  });
-});
-
 // Create a candidate
 app.post("/api/candidate", ({ body }, res) => {
   const errors = inputCheck(
@@ -124,12 +95,121 @@ app.post("/api/candidate", ({ body }, res) => {
   });
 });
 
+// Update a candidate's party
+app.put('/api/candidate/:id', (req, res) => {
+  const errors = inputCheck(req.body, 'party_id');
+  if(errors){
+    res.status(400).json({ error: errors });
+    return;
+  }
+  const sql = `UPDATE candidates SET party_id = ? WHERE id = ?`;
+  const params = [req.body.party_id, req.params.id];
+  db.query(sql, params, (err, result) => {
+    if(err){
+      res.status(400).json({ error: err.message });
+      // Check if record was found
+    } else if(!result.affectedRows){
+      res.json({
+        message: 'Candidate not found'
+      });
+    } else {
+      res.json({
+        message: 'success',
+        data: req.body,
+        changes: result.affectedRows
+      });
+    }
+  });
+});
+
+//Delete a condidate
+app.delete("/api/candidates/:id", (req, res) => {
+  const sql = `DELETE FROM candidates WHERE id = ?`;
+  const params = [req.params.id];
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    } else if (!result.affectedRows) {
+      res.json({
+        message: "Candidate not found",
+      });
+    } else {
+      res.json({
+        message: "deleted",
+        changes: result.affectedRows,
+        id: req.params.id,
+      });
+    }
+  });
+});
+
+// GET all parties
+app.get('/api/party', (req, res) => {
+  const sql = `SELECT * FROM parties`;
+  db.query(sql, (err, rows) => {
+    if(err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    res.json({
+      message: 'success',
+      data: rows
+    });
+  });
+});
+
+
+// get a single party
+app.get('/api/party/:id', (req, res) => {
+  const sql = `SELECT * FROM parties WHERE id = ?`;
+  const params = [req.params.id];
+  db.query(sql, params, (err, row) => {
+    if(err){
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    res.json({
+      message: 'success',
+      data: row
+    });
+  });
+});
+
+// Delete a party
+app.delete('/api/party/:id', (req, res) => {
+  const sql = `DELETE FROM parties WHERE id = ?`;
+  const params = [req.params.id];
+  db.query(sql, params, (err, result) => {
+    if(err){
+      res.status(400).json({ error: err.message });
+      // Checks if anything was deleted.
+    } else if(!result.affectedRows) {
+      res.json({
+        message: 'Party not found'
+      });
+    } else {
+      res.json({
+        message: 'deleted successfully!',
+        changes: result.affectedRows,
+        id: req.params.id
+      });
+    }
+  });
+});
+
+
 //catchall route
 // Default response for any other request (Not Found)
 app.use((req, res) => {
   res.status(404).end();
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+db.connect(err => {
+  if(err) throw err;
+  console.log('Database connected.')
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 });
+
