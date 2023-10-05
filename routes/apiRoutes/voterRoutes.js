@@ -36,6 +36,15 @@ router.get('/voter/:id', (req, res) => {
     });
 });
 
+//create a voter
+router.post('/voter', ({ body }, res) => {
+    const errors = inputCheck(body, 'first_name', 'last_name', 'email') ;
+    if(errors) {
+        res.status(400).json({ error: errors });
+        return;   }
+})
+
+
 //Delete a voter
 router.delete('/voter/:id', (req, res) => {
     const sql = `DELETE FROM voters WHERE id = ?`;
