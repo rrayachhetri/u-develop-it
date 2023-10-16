@@ -10,7 +10,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 // use apiRoutes
-app.use('./api', apiRoutes);
+app.use("/api", apiRoutes);
 
 app.get("/", (req, res) => {
   res.json({
