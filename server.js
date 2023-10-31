@@ -14,7 +14,7 @@ app.use("/api", apiRoutes);
 
 app.get("/", (req, res) => {
   res.json({
-    message: "This is eWorld, your communication is being reserved!",
+    message: "This is eWorld, your communication is successful!",
     planet: "Selixicaz",
   });
 });
