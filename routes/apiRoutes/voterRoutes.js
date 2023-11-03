@@ -94,7 +94,6 @@ router.put('/voter/:id', (req, res) => {
         res.status(400).json({ errors: errors });
         return;
     }
-
     const sql = `UPDATE voters SET email=? WHERE id=?`;
     const params = [req.body.email, req.params.id];
 db.query(sql, params, (err, result) => {
